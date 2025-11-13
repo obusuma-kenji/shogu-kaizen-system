@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>キャリアパス要件設計 - {{ facility.name }}</title>
+    <style>
+        body { font-family: 'Hiragino Sans', sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        h1 { color: #333; margin-bottom: 10px; }
+        .facility-name { color: #666; margin-bottom: 30px; }
+        .back-link { display: inline-block; margin-bottom: 20px; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 5px; }
+        .back-link:hover { background: #5a6268; }
+        
+        .menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; margin-top: 20px; }
+        .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .card h2 { margin-top: 0; color: #667eea; font-size: 1.3em; }
+        .card p { color: #666; line-height: 1.6; margin: 10px 0; }
+        .card .status { padding: 15px; background: #f8f9fa; border-radius: 5px; margin: 15px 0; }
+        .card .status .label { font-weight: bold; color: #333; display: block; margin-bottom: 5px; }
+        .card .status .value { color: #28a745; font-size: 1.1em; }
+        .card .status .value.warning { color: #ffc107; }
+        .card .status .value.danger { color: #dc3545; }
+        .card a { display: inline-block; margin-top: 15px; padding: 12px 24px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .card a:hover { background: #5568d3; }
+        
+        .info-box { background: #d1ecf1; padding: 20px; border-radius: 8px; margin-top: 30px; border-left: 4px solid #0c5460; }
+        .info-box h2 { margin-top: 0; color: #0c5460; }
+        .info-box ul { color: #0c5460; line-height: 1.8; }
+    </style>
+</head>
+<body>
+    <a href="{% url 'career_index' %}" class="back-link">← キャリア管理に戻る</a>
+    
+    <h1>📋 キャリアパス要件設計</h1>
+    <p class="facility-name">{{ facility.name }}</p>
+    
+    <div class="menu">
+        <div class="card">
+            <h2>📝 要件Ⅰ：任用要件と賃金体系</h2>
+            <p>職位ごとの任用要件（資格・経験年数）、職務内容、賃金体系を定義します。</p>
+            
+            <div class="status">
+                <span class="label">設定状況</span>
+                {% if requirement_one_count > 0 %}
+                    <span class="value">{{ requirement_one_count }}職位を設定済み</span>
+                {% else %}
+                    <span class="value danger">未設定</span>
+                {% endif %}
+            </div>
+            
+            <a href="{% url 'requirement_one_list' facility.id %}">設定画面へ</a>
+        </div>
+        
+        <div class="card">
+            <h2>📚 要件Ⅱ：人材育成の体系</h2>
+            <p>年間研修計画、職位別必須研修、研修実施記録を管理します。</p>
+            
+            <div class="status">
+                <span class="label">研修計画数</span>
+                {% if training_plan_count > 0 %}
+                    <span class="value">{{ training_plan_count }}件の計画を登録済み</span>
+                {% else %}
+                    <span class="value danger">未設定</span>
+                {% endif %}
+            </div>
+            
+            <a href="{% url 'requirement_two_list' facility.id %}">設定画面へ</a>
+        </div>
+        
+        <div class="card">
+            <h2>⬆️ 要件Ⅲ：昇給制度の整備</h2>
+            <p>定期昇給ルール、昇格基準、評価制度との連携を定義します。</p>
+            
+            <div class="status">
+                <span class="label">設定状況</span>
+                {% if has_salary_system %}
+                    <span class="value">設定済み</span>
+                {% else %}
+                    <span class="value danger">未設定</span>
+                {% endif %}
+            </div>
+            
+            <a href="{% url 'requirement_three_edit' facility.id %}">設定画面へ</a>
+        </div>
+    </div>
+    
+    <div class="info-box">
+        <h2>💡 キャリアパス要件とは</h2>
+        <p>処遇改善加算を取得するために必要な制度設計です：</p>
+        <ul>
+            <li><strong>要件Ⅰ</strong>：職位・職責・職務内容に応じた任用要件と賃金体系を整備</li>
+            <li><strong>要件Ⅱ</strong>：資質向上のための計画を策定し、研修の実施または研修の機会を確保</li>
+            <li><strong>要件Ⅲ</strong>：経験・資格等に応じて昇給する仕組み、または一定の基準に基づき定期的に昇給を判定する仕組みを設定</li>
+        </ul>
+        <p><strong>加算区分と要件の関係：</strong></p>
+        <ul>
+            <li><strong>加算Ⅰ</strong>：要件Ⅰ + 要件Ⅱ + 要件Ⅲ + 職場環境等要件</li>
+            <li><strong>加算Ⅱ</strong>：要件Ⅰ + 要件Ⅱ + 職場環境等要件</li>
+            <li><strong>加算Ⅲ</strong>：要件Ⅰ + 要件Ⅱ</li>
+        </ul>
+    </div>
+</body>
+</html>

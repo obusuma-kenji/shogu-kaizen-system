@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if is_new %}新規研修計画{% else %}研修計画編集{% endif %} - {{ facility.name }}</title>
+    <style>
+        body { font-family: 'Hiragino Sans', sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        h1 { color: #333; margin-bottom: 10px; }
+        .subtitle { color: #666; margin-bottom: 30px; }
+        .back-link { display: inline-block; margin-bottom: 20px; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 5px; }
+        .back-link:hover { background: #5a6268; }
+        
+        .form-container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .form-section { margin-bottom: 40px; }
+        .form-section h2 { color: #667eea; font-size: 1.2em; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #667eea; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: bold; color: #333; margin-bottom: 8px; }
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group input[type="date"],
+        .form-group select,
+        .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 1em; box-sizing: border-box; }
+        .form-group textarea { min-height: 100px; resize: vertical; font-family: inherit; }
+        .form-group .help-text { font-size: 0.9em; color: #666; margin-top: 5px; }
+        
+        .checkbox-group { display: flex; align-items: center; margin-bottom: 10px; }
+        .checkbox-group input[type="checkbox"] { width: auto; margin-right: 10px; }
+        .checkbox-group label { margin-bottom: 0; }
+        
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        .button-group { display: flex; gap: 15px; margin-top: 30px; }
+        .btn { padding: 12px 30px; border: none; border-radius: 5px; font-size: 1em; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; text-align: center; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5568d3; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5a6268; }
+    </style>
+</head>
+<body>
+    <a href="{% url 'requirement_two_list' facility.id %}" class="back-link">← 一覧に戻る</a>
+    
+    <h1>{% if is_new %}📚 新規研修計画{% else %}📝 研修計画編集{% endif %}</h1>
+    <p class="subtitle">{{ facility.name }}</p>
+    
+    <div class="form-container">
+        <form method="POST">
+            {% csrf_token %}
+            
+            <!-- 基本情報 -->
+            <div class="form-section">
+                <h2>📋 基本情報</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fiscal_year">年度 <span style="color: red;">*</span></label>
+                        <input type="number" name="fiscal_year" id="fiscal_year" value="{% if plan.fiscal_year %}{{ plan.fiscal_year }}{% else %}{{ current_year }}{% endif %}" required min="2020" max="2030">
+                    </div>
+                    
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" name="is_mandatory" id="is_mandatory" {% if plan.is_mandatory %}checked{% endif %}>
+                        <label for="is_mandatory">必須研修</label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="training_name">研修名 <span style="color: red;">*</span></label>
+                    <input type="text" name="training_name" id="training_name" value="{{ plan.training_name }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>対象職位 <span style="color: red;">*</span></label>
+                    <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 5px;">
+                        {% for position in positions %}
+                        <div class="checkbox-group">
+                            <input type="checkbox" name="target_positions" value="{{ position.id }}" id="position_{{ position.id }}"
+                                {% if position in plan.target_positions.all %}checked{% endif %}>
+                            <label for="position_{{ position.id }}">{{ position.position_name }} ({{ position.get_job_category_display }})</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="help-text">この研修の対象となる職位を選択してください</div>
+                </div>
+            </div>
+            
+            <!-- 研修内容 -->
+            <div class="form-section">
+                <h2>📖 研修内容</h2>
+                
+                <div class="form-group">
+                    <label for="description">研修内容 <span style="color: red;">*</span></label>
+                    <textarea name="description" id="description" required>{{ plan.description }}</textarea>
+                    <div class="help-text">研修の具体的な内容を記載してください</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="objectives">目標・到達目標 <span style="color: red;">*</span></label>
+                    <textarea name="objectives" id="objectives" required>{{ plan.objectives }}</textarea>
+                    <div class="help-text">この研修で達成すべき目標</div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="training_type">研修形態 <span style="color: red;">*</span></label>
+                        <select name="training_type" id="training_type" required>
+                            <option value="OJT" {% if plan.training_type == 'OJT' %}selected{% endif %}>OJT（職場内訓練）</option>
+                            <option value="OFF_JT" {% if plan.training_type == 'OFF_JT' %}selected{% endif %}>Off-JT（職場外訓練）</option>
+                            <option value="EXTERNAL" {% if plan.training_type == 'EXTERNAL' %}selected{% endif %}>外部研修</option>
+                            <option value="ONLINE" {% if plan.training_type == 'ONLINE' %}selected{% endif %}>オンライン研修</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="duration_hours">研修時間</label>
+                        <input type="number" name="duration_hours" id="duration_hours" value="{{ plan.duration_hours }}" step="0.5" min="0">
+                        <div class="help-text">時間</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="instructor">講師・担当者</label>
+                    <input type="text" name="instructor" id="instructor" value="{{ plan.instructor }}">
+                    <div class="help-text">講師名または担当部署</div>
+                </div>
+            </div>
+            
+            <!-- 実施予定 -->
+            <div class="form-section">
+                <h2>📅 実施予定</h2>
+                
+                <div class="form-group">
+                    <label for="scheduled_date">実施予定日</label>
+                    <input type="date" name="scheduled_date" id="scheduled_date" value="{% if plan.scheduled_date %}{{ plan.scheduled_date|date:'Y-m-d' }}{% endif %}">
+                    <div class="help-text">未定の場合は空欄のままにしてください</div>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary">保存</button>
+                <a href="{% url 'requirement_two_list' facility.id %}" class="btn btn-secondary">キャンセル</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

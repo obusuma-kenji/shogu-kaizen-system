@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>職員一覧</title>
+    <style>
+        body { font-family: sans-serif; max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #667eea; color: white; }
+    </style>
+</head>
+<body>
+    <h1>👥 職員一覧 - {{ facility.name }}</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>職員番号</th>
+                <th>氏名</th>
+                <th>職位</th>
+                <th>雇用形態</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for staff in staff_members %}
+            <tr>
+                <td>{{ staff.staff_id }}</td>
+                <td>{{ staff.name }}</td>
+                <td>{{ staff.current_position|default:"未設定" }}</td>
+                <td>{{ staff.get_employment_status_display }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p><a href="/admin/">管理画面へ戻る</a></p>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>要件Ⅱ：人材育成の体系 - {{ facility.name }}</title>
+    <style>
+        body { font-family: 'Hiragino Sans', sans-serif; max-width: 1400px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        h1 { color: #333; margin-bottom: 10px; }
+        .facility-name { color: #666; margin-bottom: 30px; }
+        .back-link { display: inline-block; margin-bottom: 20px; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 5px; }
+        .back-link:hover { background: #5a6268; }
+        .btn-new { display: inline-block; margin-bottom: 20px; padding: 10px 20px; background: #28a745; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .btn-new:hover { background: #218838; }
+        
+        .plans-table { width: 100%; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .plans-table table { width: 100%; border-collapse: collapse; }
+        .plans-table th { background: #667eea; color: white; padding: 15px; text-align: left; font-weight: bold; }
+        .plans-table td { padding: 15px; border-bottom: 1px solid #eee; }
+        .plans-table tr:hover { background: #f8f9fa; }
+        .plans-table tr:last-child td { border-bottom: none; }
+        
+        .badge { padding: 5px 10px; border-radius: 3px; font-size: 0.85em; font-weight: bold; }
+        .badge.ojt { background: #d1ecf1; color: #0c5460; }
+        .badge.off-jt { background: #d4edda; color: #155724; }
+        .badge.external { background: #fff3cd; color: #856404; }
+        .badge.online { background: #cce5ff; color: #004085; }
+        .badge.mandatory { background: #f8d7da; color: #721c24; }
+        
+        .action-btn { display: inline-block; padding: 8px 15px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; font-size: 0.9em; margin-right: 5px; }
+        .action-btn:hover { background: #5568d3; }
+        
+        .empty-state { text-align: center; padding: 60px 20px; color: #999; }
+        .empty-state .icon { font-size: 3em; margin-bottom: 20px; }
+        
+        .info-box { background: #d1ecf1; padding: 20px; border-radius: 8px; margin-top: 30px; border-left: 4px solid #0c5460; }
+        .info-box h3 { margin-top: 0; color: #0c5460; }
+        .info-box p { color: #0c5460; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <a href="{% url 'career_path_requirements_index' facility.id %}" class="back-link">← キャリアパス要件設計に戻る</a>
+    
+    <h1>📚 要件Ⅱ：人材育成の体系</h1>
+    <p class="facility-name">{{ facility.name }}</p>
+    
+    <a href="{% url 'training_plan_new' facility.id %}" class="btn-new">+ 新規研修計画を追加</a>
+    
+    {% if training_plans %}
+    <div class="plans-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>年度</th>
+                    <th>研修名</th>
+                    <th>研修形態</th>
+                    <th>実施予定日</th>
+                    <th>対象職位</th>
+                    <th>必須/任意</th>
+                    <th>時間</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for plan in training_plans %}
+                <tr>
+                    <td><strong>{{ plan.fiscal_year }}年度</strong></td>
+                    <td>{{ plan.training_name }}</td>
+                    <td>
+                        {% if plan.training_type == 'OJT' %}
+                            <span class="badge ojt">OJT</span>
+                        {% elif plan.training_type == 'OFF_JT' %}
+                            <span class="badge off-jt">Off-JT</span>
+                        {% elif plan.training_type == 'EXTERNAL' %}
+                            <span class="badge external">外部研修</span>
+                        {% elif plan.training_type == 'ONLINE' %}
+                            <span class="badge online">オンライン</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if plan.scheduled_date %}
+                            {{ plan.scheduled_date|date:"Y年m月d日" }}
+                        {% else %}
+                            <span style="color: #999;">未定</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% for position in plan.target_positions.all %}
+                            <span style="margin-right: 5px;">{{ position.position_name }}</span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% if plan.is_mandatory %}
+                            <span class="badge mandatory">必須</span>
+                        {% else %}
+                            <span style="color: #999;">任意</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if plan.duration_hours %}
+                            {{ plan.duration_hours }}時間
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'training_plan_edit' facility.id plan.id %}" class="action-btn">編集</a>
+                        <a href="/admin/career_management/trainingplan/{{ plan.id }}/change/" class="action-btn" target="_blank">詳細</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="plans-table">
+        <div class="empty-state">
+            <div class="icon">📚</div>
+            <p><strong>研修計画が登録されていません</strong></p>
+            <p>「新規研修計画を追加」ボタンから研修計画を登録してください。</p>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="info-box">
+        <h3>💡 キャリアパス要件Ⅱについて</h3>
+        <p>
+            要件Ⅱは「資質向上のための計画を策定し、研修の実施または研修の機会を確保」することが必要です。
+        </p>
+        <p>
+            年間研修計画を策定し、職位別に必要な研修を明確にすることで、計画的な人材育成が可能になります。
+            OJT（職場内訓練）、Off-JT（職場外訓練）、外部研修を組み合わせることが効果的です。
+        </p>
+        <ul style="color: #0c5460; line-height: 1.8;">
+            <li><strong>OJT</strong>：日常業務を通じた指導・育成</li>
+            <li><strong>Off-JT</strong>：施設内での集合研修</li>
+            <li><strong>外部研修</strong>：外部機関が実施する専門研修</li>
+            <li><strong>オンライン研修</strong>：eラーニングなどのオンライン学習</li>
+        </ul>
+    </div>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>処遇改善計画書一覧</title>
+    <style>
+        body { font-family: sans-serif; max-width: 1400px; margin: 20px auto; padding: 0 20px; background: #f5f5f5; }
+        h1 { color: #333; }
+        .controls { margin-bottom: 20px; }
+        .controls a { display: inline-block; padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; margin-right: 10px; }
+        .controls a:hover { background: #5568d3; }
+        .plan-table { width: 100%; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #667eea; color: white; font-weight: bold; }
+        tr:hover { background: #f9f9f9; }
+        .badge { padding: 5px 10px; border-radius: 3px; font-size: 0.9em; font-weight: bold; }
+        .badge-draft { background: #fff3cd; color: #856404; }
+        .badge-submitted { background: #d4edda; color: #155724; }
+        .badge-approved { background: #d1ecf1; color: #0c5460; }
+        .tier-badge { padding: 3px 8px; background: #667eea; color: white; border-radius: 3px; font-size: 0.9em; }
+        .view-link { color: #667eea; text-decoration: none; font-weight: bold; }
+        .view-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>📋 処遇改善計画書一覧</h1>
+    
+    <div class="controls">
+        <a href="/plan-wizard/">➕ 新規作成</a>
+        <a href="/">🏠 トップページ</a>
+        <a href="/admin/">⚙️ 管理画面</a>
+    </div>
+    
+    <div class="plan-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>事業者</th>
+                    <th>対象年度</th>
+                    <th>申請加算</th>
+                    <th>判定結果</th>
+                    <th>加算見込額</th>
+                    <th>ステータス</th>
+                    <th>作成日</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for plan in plans %}
+                <tr>
+                    <td><strong>{{ plan.provider.name }}</strong></td>
+                    <td>{{ plan.fiscal_year }}年度</td>
+                    <td><span class="tier-badge">{{ plan.get_target_addition_tier_display }}</span></td>
+                    <td>
+                        {% if plan.determined_addition_tier %}
+                        <span class="tier-badge">{{ plan.get_determined_addition_tier_display }}</span>
+                        {% else %}
+                        <span style="color: #999;">未判定</span>
+                        {% endif %}
+                    </td>
+                    <td><strong>{{ plan.estimated_addition_amount|floatformat:0 }}円</strong></td>
+                    <td>
+                        <span class="badge badge-{{ plan.status }}">{{ plan.get_status_display }}</span>
+                    </td>
+                    <td>{{ plan.created_at|date:"Y/m/d" }}</td>
+                    <td><a href="{% url 'plan_detail' plan.id %}" class="view-link">詳細を見る</a></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 40px; color: #999;">
+                        処遇改善計画書が登録されていません。<br>
+                        <a href="/plan-wizard/" style="color: #667eea;">新規作成</a>してください。
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>要件Ⅰ：任用要件と賃金体系 - {{ facility.name }}</title>
+    <style>
+        body { font-family: 'Hiragino Sans', sans-serif; max-width: 1400px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        h1 { color: #333; margin-bottom: 10px; }
+        .facility-name { color: #666; margin-bottom: 30px; }
+        .back-link { display: inline-block; margin-bottom: 20px; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 5px; }
+        .back-link:hover { background: #5a6268; }
+        
+        .positions-table { width: 100%; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .positions-table table { width: 100%; border-collapse: collapse; }
+        .positions-table th { background: #667eea; color: white; padding: 15px; text-align: left; font-weight: bold; }
+        .positions-table td { padding: 15px; border-bottom: 1px solid #eee; }
+        .positions-table tr:hover { background: #f8f9fa; }
+        .positions-table tr:last-child td { border-bottom: none; }
+        
+        .status-badge { padding: 5px 10px; border-radius: 3px; font-size: 0.9em; font-weight: bold; }
+        .status-badge.complete { background: #d4edda; color: #155724; }
+        .status-badge.incomplete { background: #fff3cd; color: #856404; }
+        
+        .action-btn { display: inline-block; padding: 8px 15px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; font-size: 0.9em; }
+        .action-btn:hover { background: #5568d3; }
+        
+        .salary-range { color: #28a745; font-weight: bold; }
+        
+        .info-box { background: #d1ecf1; padding: 20px; border-radius: 8px; margin-top: 30px; border-left: 4px solid #0c5460; }
+        .info-box h3 { margin-top: 0; color: #0c5460; }
+        .info-box p { color: #0c5460; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <a href="{% url 'career_path_requirements_index' facility.id %}" class="back-link">← キャリアパス要件設計に戻る</a>
+    
+    <h1>📝 要件Ⅰ：任用要件と賃金体系</h1>
+    <p class="facility-name">{{ facility.name }}</p>
+    
+    <div class="positions-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>職種</th>
+                    <th>職位</th>
+                    <th>レベル</th>
+                    <th>必要経験年数</th>
+                    <th>賃金範囲</th>
+                    <th>設定状況</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in positions_data %}
+                <tr>
+                    <td>{{ data.position.get_job_category_display }}</td>
+                    <td><strong>{{ data.position.position_name }}</strong></td>
+                    <td>{{ data.position.level }}</td>
+                    <td>
+                        {% if data.has_requirement %}
+                            {{ data.requirement.required_experience_years }}年以上
+                        {% else %}
+                            <span style="color: #999;">未設定</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if data.has_requirement %}
+                            <span class="salary-range">
+                                {{ data.requirement.base_salary_min|floatformat:0 }}円
+                                〜
+                                {{ data.requirement.base_salary_max|floatformat:0 }}円
+                            </span>
+                        {% else %}
+                            <span style="color: #999;">未設定</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if data.has_requirement %}
+                            <span class="status-badge complete">✓ 設定済み</span>
+                        {% else %}
+                            <span class="status-badge incomplete">未設定</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'requirement_one_edit' facility.id data.position.id %}" class="action-btn">
+                            {% if data.has_requirement %}編集{% else %}設定{% endif %}
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 40px; color: #999;">
+                        職位が登録されていません。<br>
+                        まず<a href="/admin/career_management/position/" style="color: #667eea;">管理画面</a>から職位を登録してください。
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="info-box">
+        <h3>💡 任用要件と賃金体系について</h3>
+        <p>
+            キャリアパス要件Ⅰでは、各職位について以下を明確化する必要があります：
+        </p>
+        <ul style="color: #0c5460; line-height: 1.8;">
+            <li><strong>任用要件</strong>：その職位に就くために必要な資格・経験年数・スキル</li>
+            <li><strong>職務内容</strong>：具体的な業務内容・責任範囲・権限</li>
+            <li><strong>賃金体系</strong>：基本給の範囲・各種手当・昇給ルール</li>
+        </ul>
+        <p>
+            これらを文書化することで、職員のキャリアパスが明確になり、
+            処遇改善加算の要件Ⅰを満たすことができます。
+        </p>
+    </div>
+</body>
+</html>

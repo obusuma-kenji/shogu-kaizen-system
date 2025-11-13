@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>キャリア管理</title>
+    <style>
+        body { font-family: 'Hiragino Sans', sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        h1 { color: #333; }
+        .back-link { display: inline-block; margin-bottom: 20px; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 5px; }
+        .back-link:hover { background: #5a6268; }
+        .menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 30px; }
+        .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .card h2 { margin-top: 0; color: #667eea; font-size: 1.3em; }
+        .card p { color: #666; line-height: 1.6; margin: 10px 0; }
+        .card a { display: inline-block; margin-top: 15px; padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; }
+        .card a:hover { background: #5568d3; }
+        .facilities { background: white; padding: 25px; border-radius: 8px; margin-top: 30px; }
+        .facilities h2 { color: #333; }
+        .facility-item { padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .facility-item:last-child { border-bottom: none; }
+        .facility-links a { margin-left: 10px; padding: 8px 15px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; font-size: 0.9em; }
+        .facility-links a:hover { background: #5568d3; }
+        .facility-links a.primary { background: #28a745; }
+        .facility-links a.primary:hover { background: #218838; }
+        .guide { background: #fff3cd; padding: 20px; border-radius: 8px; margin-top: 30px; border-left: 4px solid #ffc107; }
+        .guide h2 { margin-top: 0; color: #856404; }
+        .guide ol { color: #666; line-height: 1.8; }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-link">← トップページに戻る</a>
+    
+    <h1>📈 キャリア管理</h1>
+    <p>職位階層の定義、賃金テーブルの設計、職員管理を行います。</p>
+    
+    <div class="menu">
+        <div class="card">
+            <h2>💰 賃金テーブル構築</h2>
+            <p>号級制度に基づく賃金テーブルを作成・編集します。地域相場に基づいた最適な賃金を提案します。</p>
+            <a href="/admin/career_management/position/">職位管理へ</a>
+        </div>
+        
+        <div class="card">
+            <h2>👥 職員管理</h2>
+            <p>職員情報の登録・管理、経験年数の計算、評価履歴の管理を行います。</p>
+            <a href="/admin/career_management/staffmember/">職員一覧へ</a>
+        </div>
+        
+        <div class="card">
+            <h2>⬆️ 昇格判定</h2>
+            <p>経験年数、評価点数、資格要件から昇格適性を自動判定します。</p>
+            <a href="/admin/career_management/promotionrecord/">昇格記録へ</a>
+        </div>
+        
+        <div class="card">
+            <h2>📊 評価管理</h2>
+            <p>職種別評価基準の設定、職員評価の記録・管理を行います。</p>
+            <a href="/admin/career_management/staffevaluation/">評価記録へ</a>
+        </div>
+        
+        <div class="card">
+            <h2>📋 キャリアパス要件設計</h2>
+            <p>処遇改善加算のキャリアパス要件Ⅰ〜Ⅲを設計・文書化します。</p>
+            <p style="color: #999; font-size: 0.9em; margin-top: 5px;">※ 事業所を選択してください</p>
+            <a href="#facilities">事業所を選択</a>
+        </div>
+        
+        <div class="card">
+            <h2>💼 職種・職位</h2>
+            <p>職種分類、職位階層の定義、必要経験年数・資格要件の設定を行います。</p>
+            <a href="/admin/career_management/jobcategory/">職種管理へ</a>
+        </div>
+        
+        <div class="card">
+            <h2>⚙️ 管理画面</h2>
+            <p>Django管理画面から詳細な設定や一括編集を行います。</p>
+            <a href="/admin/career_management/">管理画面へ</a>
+        </div>
+    </div>
+    
+    {% if facilities %}
+    <div class="facilities" id="facilities">
+        <h2>🏢 登録済み事業所</h2>
+        {% for facility in facilities %}
+        <div class="facility-item">
+            <div>
+                <strong>{{ facility.name }}</strong>
+                <span style="color: #999; margin-left: 15px;">{{ facility.get_service_type_display }}</span>
+            </div>
+            <div class="facility-links">
+                <a href="{% url 'career_path_requirements_index' facility.id %}" class="primary">キャリアパス要件</a>
+                <a href="{% url 'wage_table_builder' facility.id %}">賃金テーブル</a>
+                <a href="{% url 'staff_list' facility.id %}">職員一覧</a>
+                <a href="{% url 'promotion_candidates' facility.id %}">昇格候補</a>
+            </div>
+        </div>
+        {% endfor %}
+        <div style="margin-top: 15px; text-align: right;">
+            <a href="/admin/facility_management/facility/" style="color: #667eea; text-decoration: none;">すべての事業所を見る →</a>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="guide">
+        <h2>💡 使い方ガイド</h2>
+        <ol>
+            <li><strong>事業所を登録</strong> - まず管理画面から事業所を登録します</li>
+            <li><strong>職種・職位を定義</strong> - 職種分類と職位階層を定義します</li>
+            <li><strong>賃金テーブルを作成</strong> - 号級制度に基づく賃金テーブルを構築します</li>
+            <li><strong>キャリアパス要件を設計</strong> - 処遇改善加算に必要な要件Ⅰ〜Ⅲを設定します</li>
+            <li><strong>職員を登録</strong> - 職員情報（職員番号、氏名、職位など）を登録します</li>
+            <li><strong>評価を記録</strong> - 定期的に職員評価を記録します</li>
+            <li><strong>昇格判定</strong> - 昇格候補者を確認し、昇格処理を行います</li>
+        </ol>
+    </div>
+</body>
+</html>

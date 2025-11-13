@@ -1,0 +1,70 @@
+{% load career_filters %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>号級賃金テーブル構築支援</title>
+    <style>
+        body { font-family: sans-serif; max-width: 1400px; margin: 20px auto; padding: 0 20px; }
+        h1 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
+        th { background-color: #667eea; color: white; }
+        .step-col { text-align: center; font-weight: bold; background-color: #f2f2f2; }
+        .saved-cell { background-color: #d4edda; }
+        .unsaved-cell { background-color: #fff3cd; }
+        .card { background: white; padding: 20px; margin: 20px 0; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        button { padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>💰 号級賃金テーブル - {{ facility.name }}</h1>
+    {% if messages %}
+    {% for message in messages %}
+    <div style="padding: 15px; background: #d4edda; margin: 10px 0; border-radius: 5px;">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    
+    <table>
+        <thead>
+            <tr>
+                <th class="step-col">号 ＼ 級</th>
+                {% for data in positions_data %}
+                <th>{{ data.position.position_name }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for step in max_steps_range %}
+            <tr>
+                <td class="step-col">{{ step }}号</td>
+                {% for data in positions_data %}
+                <td {% if data.is_saved %}class="saved-cell"{% else %}class="unsaved-cell"{% endif %}>
+                    {% if step in data.salary_by_step %}
+                    {{ data.salary_by_step|lookup:step|floatformat:0 }}円
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <h2>⚙️ 賃金テーブル設定</h2>
+    {% for data in positions_data %}
+    <div class="card">
+        <h3>{{ data.position.position_name }}</h3>
+        <p>初任給: {{ data.suggestion.base_salary_start }}円 / 昇給額: {{ data.suggestion.step_raise_amount }}円</p>
+        {% if not data.is_saved %}
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="position_id" value="{{ data.position.id }}">
+            <button type="submit">保存する</button>
+        </form>
+        {% endif %}
+    </div>
+    {% endfor %}
+    
+    <p><a href="/admin/">管理画面へ戻る</a></p>
+</body>
+</html>

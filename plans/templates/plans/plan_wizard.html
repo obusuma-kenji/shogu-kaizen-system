@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>処遇改善計画書作成ウィザード</title>
+    <style>
+        body { font-family: sans-serif; max-width: 900px; margin: 20px auto; padding: 0 20px; background: #f5f5f5; }
+        h1 { color: #333; }
+        .progress { display: flex; justify-content: space-between; margin: 30px 0; }
+        .progress .step { flex: 1; text-align: center; padding: 15px; background: #e9ecef; position: relative; }
+        .progress .step.active { background: #667eea; color: white; font-weight: bold; }
+        .progress .step.completed { background: #28a745; color: white; }
+        .form-section { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 8px; color: #333; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 1em; }
+        .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; min-height: 100px; }
+        .checkbox-group { margin: 15px 0; }
+        .checkbox-item { padding: 12px; margin: 8px 0; background: #f9f9f9; border-radius: 5px; display: flex; align-items: center; }
+        .checkbox-item input[type="checkbox"] { margin-right: 10px; width: 20px; height: 20px; }
+        .checkbox-item label { margin: 0; font-weight: normal; }
+        .buttons { display: flex; justify-content: space-between; margin-top: 30px; }
+        .btn { padding: 12px 30px; border: none; border-radius: 5px; font-size: 1em; cursor: pointer; text-decoration: none; display: inline-block; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5568d3; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5a6268; }
+        .help-text { color: #666; font-size: 0.9em; margin-top: 5px; }
+        .summary-section { background: #f9f9f9; padding: 20px; border-radius: 5px; margin: 15px 0; }
+        .summary-item { padding: 10px 0; border-bottom: 1px solid #ddd; }
+        .summary-item:last-child { border-bottom: none; }
+        .summary-item strong { display: inline-block; width: 200px; }
+    </style>
+</head>
+<body>
+    <h1>📝 処遇改善計画書作成ウィザード</h1>
+    
+    <div class="progress">
+        <div class="step {% if step == '1' %}active{% elif step|add:'0' > 1 %}completed{% endif %}">1. 基本情報</div>
+        <div class="step {% if step == '2' %}active{% elif step|add:'0' > 2 %}completed{% endif %}">2. キャリアパス要件</div>
+        <div class="step {% if step == '3' %}active{% elif step|add:'0' > 3 %}completed{% endif %}">3. 職場環境等要件</div>
+        <div class="step {% if step == '4' %}active{% elif step|add:'0' > 4 %}completed{% endif %}">4. 加算見込額</div>
+        <div class="step {% if step == '5' %}active{% endif %}">5. 確認・保存</div>
+    </div>
+    
+    <div class="form-section">
+        <form method="post">
+            {% csrf_token %}
+            
+            {% if step == '1' %}
+            <h2>基本情報の入力</h2>
+            <div class="form-group">
+                <label>事業者 *</label>
+                <select name="provider_id" required>
+                    <option value="">選択してください</option>
+                    {% for provider in providers %}
+                    <option value="{{ provider.id }}">{{ provider.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>対象年度 *</label>
+                <input type="number" name="fiscal_year" value="2025" required>
+            </div>
+            
+            <div class="form-group">
+                <label>対象事業所 *</label>
+                <div class="checkbox-group">
+                    {% for facility in facilities %}
+                    <div class="checkbox-item">
+                        <input type="checkbox" name="facility_ids" value="{{ facility.id }}" id="facility_{{ facility.id }}">
+                        <label for="facility_{{ facility.id }}">{{ facility.name }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>申請する加算区分 *</label>
+                <select name="target_tier" required>
+                    <option value="I">処遇改善加算I</option>
+                    <option value="II">処遇改善加算II</option>
+                    <option value="III">処遇改善加算III</option>
+                    <option value="IV">処遇改善加算IV</option>
+                </select>
+            </div>
+            
+            {% elif step == '2' %}
+            <h2>キャリアパス要件のチェック</h2>
+            <p class="help-text">該当する要件にチェックを入れてください</p>
+            
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" name="career_path_1" id="cp1">
+                    <label for="cp1">
+                        <strong>キャリアパス要件I</strong><br>
+                        職位・職責・職務内容等の要件を定めている
+                    </label>
+                </div>
+                
+                <div class="checkbox-item">
+                    <input type="checkbox" name="career_path_2" id="cp2">
+                    <label for="cp2">
+                        <strong>キャリアパス要件II</strong><br>
+                        資質向上のための計画を策定し、研修の実施または研修の機会を確保している
+                    </label>
+                </div>
+                
+                <div class="checkbox-item">
+                    <input type="checkbox" name="career_path_3" id="cp3">
+                    <label for="cp3">
+                        <strong>キャリアパス要件III</strong><br>
+                        経験・資格等に応じて昇給する仕組み、または一定の基準に基づき定期的に昇給する仕組みを設けている
+                    </label>
+                </div>
+                
+                <div class="checkbox-item">
+                    <input type="checkbox" name="career_path_4" id="cp4">
+                    <label for="cp4">
+                        <strong>キャリアパス要件IV</strong><br>
+                        昇給以外の処遇改善（賞与・手当等）を実施し、見える化している
+                    </label>
+                </div>
+                
+                <div class="checkbox-item">
+                    <input type="checkbox" name="career_path_5" id="cp5">
+                    <label for="cp5">
+                        <strong>キャリアパス要件V</strong><br>
+                        介護福祉士の配置等を実施している
+                    </label>
+                </div>
+            </div>
+            
+            {% elif step == '3' %}
+            <h2>職場環境等要件の取り組み選択</h2>
+            <p class="help-text">各区分から1つ以上の取り組みを選択してください</p>
+            
+            <div class="checkbox-group">
+                {% regroup initiatives by category as initiative_groups %}
+                {% for group in initiative_groups %}
+                <h3 style="margin-top: 25px; color: #667eea;">{{ group.list.0.get_category_display }}</h3>
+                {% for initiative in group.list %}
+                <div class="checkbox-item">
+                    <input type="checkbox" name="workplace_initiatives" value="{{ initiative.id }}" id="init_{{ initiative.id }}">
+                    <label for="init_{{ initiative.id }}">
+                        <strong>{{ initiative.item_number }}</strong> {{ initiative.description }}
+                    </label>
+                </div>
+                {% endfor %}
+                {% endfor %}
+            </div>
+            
+            {% elif step == '4' %}
+            <h2>加算見込額の計算</h2>
+            <div class="form-group">
+                <label>総単位数（年間見込み） *</label>
+                <input type="number" name="total_service_units" required>
+                <p class="help-text">前年度の実績等を基に、年間の総単位数を入力してください</p>
+            </div>
+            
+            <div class="help-text" style="background: #fff3cd; padding: 15px; border-radius: 5px; margin-top: 20px;">
+                <strong>💡 ヒント</strong><br>
+                加算見込額 = 総単位数 × 加算率 × 10円（概算）<br>
+                例：総単位数 100,000単位 × 加算率16.5% × 10円 = 165,000円/月
+            </div>
+            
+            {% elif step == '5' %}
+            <h2>入力内容の確認</h2>
+            <div class="summary-section">
+                <div class="summary-item">
+                    <strong>事業者:</strong> {{ summary.provider.name }}
+                </div>
+                <div class="summary-item">
+                    <strong>対象年度:</strong> {{ summary.fiscal_year }}年度
+                </div>
+                <div class="summary-item">
+                    <strong>申請する加算区分:</strong> 処遇改善加算{{ summary.target_tier }}
+                </div>
+                <div class="summary-item">
+                    <strong>キャリアパス要件:</strong>
+                    {% if summary.career_path.1 %}I{% endif %}
+                    {% if summary.career_path.2 %}・II{% endif %}
+                    {% if summary.career_path.3 %}・III{% endif %}
+                    {% if summary.career_path.4 %}・IV{% endif %}
+                    {% if summary.career_path.5 %}・V{% endif %}
+                </div>
+            </div>
+            
+            <p style="margin-top: 20px; color: #666;">
+                上記の内容で処遇改善計画書を作成します。よろしければ「保存」ボタンをクリックしてください。
+            </p>
+            {% endif %}
+            
+            <div class="buttons">
+                {% if step != '1' %}
+                <a href="?step={{ step|add:'-1' }}" class="btn btn-secondary">← 戻る</a>
+                {% else %}
+                <a href="/" class="btn btn-secondary">キャンセル</a>
+                {% endif %}
+                
+                <button type="submit" class="btn btn-primary">
+                    {% if step == '5' %}💾 保存{% else %}次へ →{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

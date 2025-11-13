@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>要件Ⅲ：昇給制度 - {{ facility.name }}</title>
+    <style>
+        body { font-family: 'Hiragino Sans', sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        h1 { color: #333; margin-bottom: 10px; }
+        .subtitle { color: #666; margin-bottom: 30px; }
+        .back-link { display: inline-block; margin-bottom: 20px; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 5px; }
+        .back-link:hover { background: #5a6268; }
+        
+        .form-container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .form-section { margin-bottom: 40px; }
+        .form-section h2 { color: #667eea; font-size: 1.2em; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #667eea; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: bold; color: #333; margin-bottom: 8px; }
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group select,
+        .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 1em; box-sizing: border-box; }
+        .form-group textarea { min-height: 100px; resize: vertical; font-family: inherit; }
+        .form-group .help-text { font-size: 0.9em; color: #666; margin-top: 5px; }
+        
+        .checkbox-group { display: flex; align-items: center; }
+        .checkbox-group input[type="checkbox"] { width: auto; margin-right: 10px; }
+        .checkbox-group label { margin-bottom: 0; }
+        
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        .button-group { display: flex; gap: 15px; margin-top: 30px; }
+        .btn { padding: 12px 30px; border: none; border-radius: 5px; font-size: 1em; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; text-align: center; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5568d3; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5a6268; }
+        
+        .info-box { background: #d1ecf1; padding: 20px; border-radius: 8px; margin-top: 30px; border-left: 4px solid #0c5460; }
+        .info-box h3 { margin-top: 0; color: #0c5460; }
+        .info-box p { color: #0c5460; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <a href="{% url 'career_path_requirements_index' facility.id %}" class="back-link">← キャリアパス要件設計に戻る</a>
+    
+    <h1>⬆️ 要件Ⅲ：昇給制度の整備</h1>
+    <p class="subtitle">{{ facility.name }}</p>
+    
+    <div class="form-container">
+        <form method="POST">
+            {% csrf_token %}
+            
+            <!-- 定期昇給 -->
+            <div class="form-section">
+                <h2>📅 定期昇給</h2>
+                
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" name="has_regular_increase" id="has_regular_increase" {% if system.has_regular_increase %}checked{% endif %}>
+                    <label for="has_regular_increase">定期昇給制度がある</label>
+                </div>
+                
+                <div class="form-group">
+                    <label for="increase_timing">定期昇給時期</label>
+                    <select name="increase_timing" id="increase_timing">
+                        <option value="APRIL" {% if system.increase_timing == 'APRIL' %}selected{% endif %}>4月</option>
+                        <option value="OCTOBER" {% if system.increase_timing == 'OCTOBER' %}selected{% endif %}>10月</option>
+                        <option value="BOTH" {% if system.increase_timing == 'BOTH' %}selected{% endif %}>4月・10月（年2回）</option>
+                        <option value="OTHER" {% if system.increase_timing == 'OTHER' %}selected{% endif %}>その他</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="increase_amount_per_step">1号級あたりの昇給額</label>
+                        <input type="number" name="increase_amount_per_step" id="increase_amount_per_step" value="{{ system.increase_amount_per_step }}" min="0" step="100">
+                        <div class="help-text">円</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="max_steps_per_year">年間最大昇給号級数</label>
+                        <input type="number" name="max_steps_per_year" id="max_steps_per_year" value="{{ system.max_steps_per_year }}" min="1" max="10">
+                        <div class="help-text">号級</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 特別昇給 -->
+            <div class="form-section">
+                <h2>⭐ 特別昇給</h2>
+                
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" name="has_special_increase" id="has_special_increase" {% if system.has_special_increase %}checked{% endif %}>
+                    <label for="has_special_increase">特別昇給制度がある</label>
+                </div>
+                
+                <div class="form-group">
+                    <label for="special_increase_conditions">特別昇給の条件</label>
+                    <textarea name="special_increase_conditions" id="special_increase_conditions">{{ system.special_increase_conditions }}</textarea>
+                    <div class="help-text">例：資格取得時、優秀な評価を受けた場合など</div>
+                </div>
+            </div>
+            
+            <!-- 評価制度との連携 -->
+            <div class="form-section">
+                <h2>📊 評価制度との連携</h2>
+                
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" name="evaluation_affects_raise" id="evaluation_affects_raise" {% if system.evaluation_affects_raise %}checked{% endif %}>
+                    <label for="evaluation_affects_raise">評価が昇給に影響する</label>
+                </div>
+                
+                <div class="form-group">
+                    <label for="evaluation_criteria">評価基準</label>
+                    <textarea name="evaluation_criteria" id="evaluation_criteria">{{ system.evaluation_criteria }}</textarea>
+                    <div class="help-text">評価と昇給の関係性（例：5段階評価で4以上の場合、通常より多く昇給）</div>
+                </div>
+            </div>
+            
+            <!-- その他 -->
+            <div class="form-section">
+                <h2>📝 その他</h2>
+                
+                <div class="form-group">
+                    <label for="notes">備考</label>
+                    <textarea name="notes" id="notes">{{ system.notes }}</textarea>
+                    <div class="help-text">その他の昇給に関する事項</div>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary">保存</button>
+                <a href="{% url 'career_path_requirements_index' facility.id %}" class="btn btn-secondary">キャンセル</a>
+            </div>
+        </form>
+    </div>
+    
+    <div class="info-box">
+        <h3>💡 キャリアパス要件Ⅲについて</h3>
+        <p>
+            要件Ⅲは「経験・資格等に応じて昇給する仕組み」または「一定の基準に基づき定期的に昇給を判定する仕組み」の整備が必要です。
+        </p>
+        <p>
+            定期昇給制度を導入し、号級制度と連携させることで、明確な昇給ルールを確立できます。
+            また、評価制度と連携させることで、職員の頑張りを適切に処遇に反映させることができます。
+        </p>
+    </div>
+</body>
+</html>
