@@ -100,12 +100,12 @@ if os.environ.get('RENDER'):
         '127.0.0.1',
     ]
     
-    # データベース（PostgreSQL）
+    # データベース（本番環境でもSQLiteを使用 - 簡易設定）
     DATABASES = {
-        'default': dj_database_url.config(
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': '/opt/render/project/src/db.sqlite3',
+        }
     }
     
     # 静的ファイル
