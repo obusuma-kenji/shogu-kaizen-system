@@ -1,3 +1,7 @@
 ユーザー名 (leave blank to use 'owner'): admin
 メールアドレス: admin@example.com
 Password:パスワード＝kaigo123
+
+監修者パスワード
+ユーザー名：kanshu							
+パスワード：shogu123
